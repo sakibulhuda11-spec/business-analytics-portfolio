@@ -1,179 +1,164 @@
-# Superstore Profitability Analytics
-## Multi-Tool Business Intelligence Pipeline
+# Dynamic Pricing Optimization for E-commerce
+## Using Regression Analysis & Causal Inference
 
-Author: Sakibul Huda
+Author: Sakibul Huda  
 Date: April 2026  
-Tools: Python · PostgreSQL · Excel · Power BI
+Tools: Python · statsmodels · PostgreSQL · Excel
 
 
 
-### Project Overview
+## Project Overview
 
-I analyzed 9,994 retail transactions from a US-based store (2014–2017) to uncover why the company earns only a 12.5% profit margin despite $2.3M in revenue. I ended up identifying unprofitable product lines, destructive discount practices, and loss-making states, then delivered actionable pricing and operational recommendations backed by data.
+This project answers a question every retailer eventually faces which is - if we change our prices, what actually happens to revenue? Using 541,909 transactions from a UK-based online retailer (Dec 2010 – Dec 2011), I estimated price elasticity of demand, tested whether promotions truly drive incremental sales, and ran counterfactual simulations to identify the revenue-maximizing pricing strategy.
 
-This project demonstrates an end-to-end analytics pipeline using four industry-standard tools: Python for data cleaning and visualization, PostgreSQL for database querying, Excel for stakeholder reporting, and Power BI for interactive dashboards.
-
-
-
-### Key Findings
-## What the Data Told Me
-
-When I started this analysis, I expected to find one or two issues — but the picture turned out to be more interesting.
-
-The clearest problem was discounts. Any order with a discount above 20% lost money, and together these orders cost the company around $135K in profit. That was the biggest single drain I found.
-
-I also noticed that three sub-categories — Tables, Bookcases, and Supplies — are unprofitable on their own, accounting for about $22K in losses. Tables alone lost $17,725.
-
-Geography mattered too. Ten states were operating at a net loss, with Texas (-$25,729), Ohio (-$16,971), and Pennsylvania (-$15,560) leading the way.
-
-On the positive side, the Home Office segment stood out as the most valuable per customer, even though it's the smallest segment — that felt like a growth lever worth pulling. And overall sales grew about 20% year over year from 2014 to 2017, which told me the business itself is healthy. The fix needed isn't more sales; it's better margins.
+I deliberately used classical statistical methods like multiple regression, hypothesis testing, and causal inference rather than black-box machine learning. The goal wasn't to predict the future; it was to understand the relationships in the data well enough to make defensible pricing recommendations with statistical evidence behind them.
 
 
 
-### Recommendations
+## The Business Problem
 
-1. Cap discounts at 20% company-wide — the data shows a clear profitability threshold
-2. Review pricing strategy for Tables, Bookcases, and Supplies — heavy discounting on high-cost items drives losses
-3. Investigate operations in Texas, Ohio, and Pennsylvania — regional factors like competition or shipping costs may be at play
-4. Invest in high-margin sub-categories — Copiers (37% margin), Labels (44%), Paper (43%) deserve more focus
-5. Grow the Home Office customer base — highest value per customer of all three segments
+I framed the project around four questions a real pricing analyst would face:
 
+1. How sensitive are customers to price changes?
+2. Do promotions actually increase revenue, or just cannibalize margins?
+3. Should pricing differ by season?
+4. What is the optimal pricing strategy to maximize revenue?
 
-
-### Tools & Skills Demonstrated
-
-## Tools & Skills Used
-
-For this project, I worked across four tools:
-
-- Python (pandas, numpy, matplotlib, seaborn) — Cleaned the data, engineered new features, ran the EDA, and built six visualizations including a correlation analysis.
-- PostgreSQL — Wrote seven analytical queries using CTEs, window functions (LAG, RANK, SUM OVER), and CASE WHEN logic, then connected to the database from Python via psycopg2.
-- Excel — Exported a four-sheet workbook with category, state, and discount summaries, formatted for stakeholder review.
-- Power BI — Built a three-page interactive dashboard with KPI cards, trend charts, a map, and slicers, using custom DAX measures for cross-filtering.
-
-
-### Methodology
-
-Phase 1 — Python (EDA & Visualization)
-- Loaded and cleaned 9,994 transactions (no missing values, no duplicates)
-- Converted dates, engineered 8 new features (year, quarter, profit margin, discount buckets, etc.)
-- Calculated KPIs: total revenue, profit, margin, order count, customer count
-- Created 6 publication-quality charts: quarterly trends, sub-category profitability, discount impact scatter plot, state comparison, segment analysis, correlation heatmap
-
-Phase 2 — PostgreSQL (SQL Analysis)
-- Connected Python to PostgreSQL using psycopg2
-- Loaded cleaned data into `superstore_analytics` database using bulk COPY method
-- Wrote 7 analytical queries demonstrating:
-  - KPI aggregation with CASE WHEN
-  - Year-over-year growth using LAG() window function
-  - Sub-category ranking using RANK() with PARTITION BY
-  - Customer tier segmentation using chained CTEs and CASE WHEN
-  - Year-to-date cumulative profit using SUM() OVER()
-  - Top loss-making products using GROUP BY with HAVING
-  - Discount impact analysis using CASE WHEN bucketing
-
-Phase 3 — Excel
-- Exported 4-sheet workbook: Category Summary, Sub-Category Detail, State Performance, Discount Impact
-- Formatted for non-technical stakeholders
-
-Phase 4 — Power BI
-- Imported cleaned CSV and created 7 DAX measures (Total Sales, Total Profit, Profit Margin, Total Orders, Total Customers, Avg Order Value, Profitable Order %)
-- Built 3 dashboard pages:
-  - Executive Overview: KPI cards + quarterly trend line + category donut chart
-  - Product Analysis: Sub-category profit bar chart + detail table + category slicer
-  - Geographic Analysis: State map + region comparison bars
-
-
-### Dashboard Preview
-
-![Executive Overview](powerbi/Dashboard_Screenshots/page1_overview.png)
-![Product Analysis](powerbi/Dashboard_Screenshots/page2_products.png)
-![Geographic Analysis](powerbi/Dashboard_Screenshots/page3_geography.png)
+Every answer I produced comes with confidence intervals, p-values, and a clear business interpretation not just a number.
 
 
 
-### Repository Structure
+## Dataset
 
-```
-superstore-profitability-analytics/
-│
-├── README.md
-├── requirements.txt
-│
-├── data/
-│   └── Sample - Superstore.csv
-│
-├── notebooks/
-│   └── Superstore_Project_FINAL.ipynb
-│
-├── sql/
-│   └── superstore_queries.sql
-│
-├── outputs/
-│   ├── Superstore_Analysis.xlsx
-│   ├── Superstore_Cleaned.csv
-│   ├── 01_quarterly_trends.png
-│   ├── 02_subcategory_profit.png
-│   ├── 03_discount_analysis.png
-│   ├── 04_state_profitability.png
-│   ├── 05_segment_analysis.png
-│   └── 06_correlation_matrix.png
-│
-└── powerbi/
-    ├── Superstore_Dashboard.pbix
-    └── Dashboard_Screenshots/
-        ├── page1_overview.png
-        ├── page2_products.png
-        └── page3_geography.png
-```
+I used the UCI Online Retail Dataset, which contains 541,909 transactions from a UK-based online retailer between December 2010 and December 2011. After cleaning (removing cancelled orders, missing customer IDs, and extreme outliers), I aggregated the data to the product-week level — a standard approach in pricing analytics that smooths out transactional noise while preserving meaningful price variation.
+
+Source: [UCI Machine Learning Repository — Online Retail Dataset](https://archive.ics.uci.edu/ml/datasets/online+retail)
 
 ---
 
-- How to Run This Project
+## What I Found
+
+After running the full regression with robust standard errors and validating the model assumptions, the results told a clear story:
+
+Price elasticity of demand was statistically significant, meaning customers did respond meaningfully to price changes. The exact elasticity estimate (with its 95% confidence interval) is documented in the notebook's regression output. This single number drives nearly every other recommendation in the project.
+
+Promotions had a measurable effect on quantity sold, but I was careful not to confuse "more units sold" with "more profit earned." Whether a promotion is worth running depends on whether the volume lift compensates for the margin loss and the elasticity estimate gives a way to calculate that break-even point.
+
+Seasonality mattered a lot. Q4 (especially October–November) showed dramatically higher demand even after controlling for price. This is the classic holiday pre-ordering pattern in B2B retail, and it has direct implications for when to discount and when to hold prices firm.
+
+The counterfactual simulations were the most useful output for stakeholders. By running the regression coefficients through different pricing scenarios, I could show exactly what the model predicts would happen to revenue at price changes of -20%, -10%, +10%, and so on. That's the kind of output a pricing manager can actually act on.
+
+
+
+## Methodology
+
+I worked through the project in seven stages, each building on the last.
+
+Stage 1 — Exploratory Data Analysis. 
+I started by understanding the data: distributions, correlations, time trends, and seasonality patterns. The price and quantity variables were heavily right-skewed, which immediately told me I'd need log transformations for the regression.
+
+Stage 2 — Feature Engineering. 
+I aggregated the raw transactions to the product-week level, then engineered features that captured what I actually wanted to study: log-transformed price and quantity (so the coefficient becomes elasticity directly), a promotion flag (defined as a >10% week-over-week price drop), seasonal dummies, peak-season indicators, and interaction terms to test whether price sensitivity changes during promotions.
+
+Stage 3 — OLS Regression. 
+I estimated a log-log demand model using `statsmodels`. The base model produced an elasticity estimate, and the full model added interaction terms to test whether the price-quantity relationship shifts during promotions or peak season. I used heteroscedasticity-consistent (HC1) robust standard errors throughout, which is best practice in applied econometrics.
+
+Stage 4 — Diagnostics. 
+A regression is only as trustworthy as its assumptions, so I tested all four:
+- Multicollinearity using Variance Inflation Factors (VIF)
+- Heteroscedasticity using the Breusch-Pagan test
+- Normality of residuals using QQ-plots and Shapiro-Wilk
+- Influential outliers using Cook's Distance
+
+Stage 5 — Hypothesis Testing. 
+I formally tested whether each coefficient was statistically significant, reported p-values and confidence intervals, and confirmed the model was jointly significant via the F-test.
+
+Stage 6 — Causal Inference & Counterfactuals. 
+This is where the analysis becomes useful for business decisions. I discussed the limitations honestly — we can't claim strict causation without randomized experiments — and then ran counterfactual simulations to estimate revenue under different pricing strategies.
+
+Stage 7 — Recommendations. 
+I translated the statistical results into specific, actionable pricing strategy recommendations and exported them to Excel for stakeholder review.
+
+
+
+## Tools & Skills Used
+
+I deliberately built this project around statistical rigor rather than predictive accuracy.
+
+I used Python with `pandas` and `numpy` for data manipulation, and `matplotlib` and `seaborn` for visualization. The core analytical work was done in `statsmodels`, specifically the formula API (`smf.ols`), which gives R-style regression syntax with full statistical output including coefficient tests, confidence intervals, and diagnostic statistics. For the diagnostic tests, I used `variance_inflation_factor` for multicollinearity, `het_breuschpagan` for heteroscedasticity, and `scipy.stats` for the normality tests.
+
+For exporting results to stakeholders, I used `openpyxl` to write a multi-sheet Excel workbook containing the regression output, revenue scenarios, and VIF diagnostics — formatted so a non-technical reader could pick it up and follow along.
+
+I chose `statsmodels` over `scikit-learn` deliberately. For a pricing analysis, statistical interpretability matters more than prediction accuracy as we need p-values, confidence intervals, and diagnostic tests to defend a pricing recommendation, and `statsmodels` gives you all of that out of the box.
+
+
+## Repository Structure
+
+dynamic-pricing-analysis/
+├── README.md
+├── requirements.txt
+├── Dynamic_Pricing_Analysis_Project.ipynb   ← Main analysis notebook
+├── 01_distributions.png                     ← Variable distributions
+├── 02_time_series.png                       ← Daily revenue, price, quantity trends
+├── 03_correlation_matrix.png                ← Correlation heatmap
+├── 04_residual_diagnostics.png              ← QQ-plot & residual histogram
+├── 05_cooks_distance.png                    ← Influential observations check
+├── 06_actual_vs_predicted.png               ← Model fit visualization
+├── 07_elasticity_curves.png                 ← Demand & revenue curves
+├── Regression_Results.csv                   ← Coefficient estimates with CIs
+├── Revenue_Scenarios.csv                    ← Counterfactual simulations
+└── VIF_Diagnostics.csv                      ← Multicollinearity check
+
+## How to Run This Project
 
 Prerequisites:
-- Python 3.12+ with pip
-- PostgreSQL with pgAdmin 4
-- Power BI Desktop (Windows)
+- Python 3.10 or newer
+- Jupyter Notebook or VS Code with the Jupyter extension
 
-Step 1: Install dependencies
+Step 1 — Install dependencies:
 ```bash
-pip install pandas numpy matplotlib seaborn openpyxl psycopg2-binary sqlalchemy
+pip install -r requirements.txt
 ```
 
-Step 2: Run the notebook
+Step 2 — Open the notebook:
 ```bash
-cd notebooks/
-jupyter notebook Superstore_Project_FINAL.ipynb
+jupyter notebook Dynamic_Pricing_Analysis_Project.ipynb
 ```
-Run all cells sequentially (Shift+Enter). The notebook will:
-- Load and clean the data
-- Generate all charts (saved to outputs/)
-- Connect to PostgreSQL and run SQL queries
-- Export the Excel workbook
 
-Step 3: PostgreSQL setup
-- Open pgAdmin 4 → create database `superstore_analytics`
-- Update the `DB_PASSWORD` variable in the notebook
-- The notebook uploads data and runs all queries automatically
+Step 3 — Run all cells. The notebook will:
+- Download the UCI Online Retail dataset directly from the source
+- Clean and aggregate the data to the product-week level
+- Run the full regression analysis with diagnostics
+- Generate all seven visualizations (saved as PNGs)
+- Export the results to CSV files
 
-Step 4: Power BI
-- Open Power BI Desktop → Get Data → Text/CSV → select `Superstore_Cleaned.csv`
-- Create the 7 DAX measures listed in the notebook
-- Build the 3 dashboard pages
+The full pipeline runs in about 2–3 minutes on a standard laptop.
 
 
 
-### Dataset
+## Limitations & Honest Caveats
 
-Source: [Kaggle — Superstore Sales Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)  
-Size: 9,994 rows × 21 columns  
-Period: January 2014 – December 2017  
-Geography: United States (49 states)
+I want to be transparent about what this analysis can and can't tell us.
+
+The estimates show association, not strict causation. To make hard causal claims about pricing, we'd need randomized A/B tests or instrumental variables neither of which were available in this dataset. The model also doesn't observe competitor pricing, marketing spend, or product lifecycle changes, all of which could confound the price-quantity relationship.
+
+The data is from 2010–2011, so the specific elasticity numbers don't directly apply to today's market. What does generalize is the methodology, the same framework can be applied to any modern pricing dataset.
+
+Finally, aggregating to product-week level smooths out within-week variation. For products with rapid price changes (flash sales, dynamic pricing), a finer time resolution would be more appropriate.
+
+Despite these caveats, the analysis provides directional guidance that a pricing team could use as a starting point — and the confidence intervals make the uncertainty explicit rather than hidden.
+
+---
+
+## What I Learned
+
+Working through this project taught me that the hardest part of pricing analytics isn't the math, it's the discipline of asking what the numbers actually mean. A regression coefficient is just a number until one can explain why, it has the sign and magnitude it does, whether the assumptions behind it hold, and what a business should actually do differently because of it.
+
+I also learned to take model diagnostics seriously. It's easy to fit a regression and report the R². It's much harder to check VIF, run Breusch-Pagan, examine Cook's Distance, and use robust standard errors, and skipping those steps is how analysts produce confident conclusions that fall apart under scrutiny.
 
 
 
-### Author
+## Author
 
 Sakibul Huda  
-[LinkedIn Profile](https://www.linkedin.com/in/sakibul-huda-376b62371/) · [Email](mailto:sakibulhuda11@gmail.com)
+LinkedIn: (https://www.linkedin.com/in/sakibul-huda-376b62371/) · Email: (mailto:sakibulhuda11@gmail.com)
